@@ -1,6 +1,8 @@
 const express = require('express');
 const app = express();
+
 const { getTopics, getApi, getArticle } = require('./controllers/api.controllers');
+
 
 
 app.get('/api/topics', getTopics);
@@ -9,7 +11,9 @@ app.get('/api/topics', getTopics);
 app.get('/api', getApi)
 
 
+
 app.get('/api/articles/:article_id', getArticle)
+
 
 app.all('*', (req, res) => {
     res.status(404).send({ msg: "not found" });
