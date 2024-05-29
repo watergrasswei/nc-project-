@@ -3,9 +3,6 @@ const request = require("supertest");
 const db = require("../db/connection.js");
 const seed = require("../db/seeds/seed.js");
 const data = require("../db/data/test-data/index");
-const endpointsJson = require('../endpoints.json');
-
-
 const endpointsJson = require("../endpoints.json");
 
 beforeEach(() => seed(data));
@@ -37,17 +34,13 @@ describe("GET /api/topics", () => {
   });
 });
 
-
-  describe.only('GET /api', () => {
-    test('responds with a JSON object describing all available endpoints', async () => {
-      const response = await request(app).get('/api')
-      expect(response.statusCode).toBe(200)
-      expect(response.body.endpoints).toEqual(endpointsJson)
-    });
+describe("GET /api", () => {
+  test("responds with a JSON object describing all available endpoints", async () => {
+    const response = await request(app).get("/api");
+    expect(response.statusCode).toBe(200);
+    expect(response.body.endpoints).toEqual(endpointsJson);
   });
-
-
-
+});
 
 describe("GET /api/articles/:article_id", () => {
   test("200: get an article by its id.", () => {
