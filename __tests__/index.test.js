@@ -4,6 +4,7 @@ const db = require("../db/connection.js");
 const seed = require("../db/seeds/seed.js");
 const data = require("../db/data/test-data/index");
 const endpointsJson = require("../endpoints.json");
+const articlesData = require('../db/data/test-data/articles.js')
 
 beforeEach(() => seed(data));
 afterAll(() => db.end());
@@ -76,4 +77,39 @@ describe("GET /api/articles/:article_id", () => {
         expect(response.body.msg).toBe("Article not found");
       });
   });
+});
+
+
+describe.only("GET /api/articles", () => {
+  test("responds with all articles.", () => {
+    return request(app)
+    .get("/api/articles")
+    .expect(200)
+    .then(({ body }) => {
+      const { articles } = body;
+      console.log(articles)
+      expect(Array.isArray(articles)).toBe(true)
+     expect(articles).toHaveLength(articlesData.length);
+      expect(articles).toBeSortedBy("created_at", { descending: true });
+      articles.forEach((article) => {
+        expect(article).toMatchObject({
+          author: expect.any(String),
+          title: expect.any(String),
+          article_id: expect.any(Number),
+          topic: expect.any(String),
+          created_at: expect.any(String),
+          votes: expect.any(Number),
+          article_img_url: expect.any(String),
+          comment_count: expect.any(Number),
+        });
+      });
+    });
+  });
+
+  test("should return 404 for an invalid endpoint", () => {
+    return request(app)
+      .get("/api/invalid_endpoint")
+      .expect(404);
+  });
+
 });
