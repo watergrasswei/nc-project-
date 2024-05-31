@@ -127,11 +127,33 @@ const updateArticleVotes = (article_id, inc_votes) => {
  };
 
 
+const deleteCommentById = (comment_id) => {
+   const numberCommentId = +comment_id;
+ 
+   if (isNaN(numberCommentId)) {
+     return Promise.reject({ status: 400, msg: "Invalid comment ID format" });
+   }
+ 
+   const deleteCommentQuery = `
+     DELETE FROM comments
+     WHERE comment_id = $1
+     RETURNING *;
+   `;
+ 
+   return db.query(deleteCommentQuery, [comment_id])
+     .then(deleteCommentResult => {
+       if (deleteCommentResult.rows.length === 0) {
+         return Promise.reject({ status: 404, msg: 'Comment not found' });
+       }
+     });
+ };
+
 module.exports = {
   selectTopics,
   selectArticle,
   selectArticles,
   selectComments,
   insertComment,
-  updateArticleVotes
+  updateArticleVotes,
+  deleteCommentById
 };
