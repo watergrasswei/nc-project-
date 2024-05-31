@@ -137,7 +137,6 @@ describe("GET /api/articles/:article_id/comments", () => {
       .expect(200)
       .then(({ body }) => {
         const { comments } = body;
-        console.log(comments);
         expect(Array.isArray(comments)).toBe(true);
         expect(comments).toHaveLength(0);
       });
@@ -174,7 +173,6 @@ describe("POST /api/articles/:article_id/comments", () => {
       .send(newComment)
       .expect(201)
       .then(({ body }) => {
-        console.log(body.comment);
         expect(body.comment).toEqual(
           expect.objectContaining({
             comment_id: expect.any(Number),
@@ -240,6 +238,61 @@ describe("POST /api/articles/:article_id/comments", () => {
       .expect(404)
       .then(({ body }) => {
         expect(body.msg).toBe("User not found");
+      });
+  });
+});
+
+describe("PATCH /api/articles/:article_id", () => {
+  test("200: Responds with the updated article", () => {
+    const updateData = { inc_votes: 1 };
+
+    return request(app)
+      .patch("/api/articles/1")
+      .send(updateData)
+      .expect(200)
+      .then(({ body }) => {
+        expect(body.article).toEqual(
+          expect.objectContaining({
+            article_id: 1,
+            votes: 101,
+          })
+        );
+      });
+  });
+
+  test("400: Invalid article ID format", () => {
+    const updateData = { inc_votes: 1 };
+
+    return request(app)
+      .patch("/api/articles/invalid_id")
+      .send(updateData)
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Invalid article ID format");
+      });
+  });
+
+  test("400: Invalid vote increment format", () => {
+    const updateData = { inc_votes: "invalid_vote" };
+
+    return request(app)
+      .patch("/api/articles/1")
+      .send(updateData)
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Invalid vote increment format");
+      });
+  });
+
+  test("404: Article not found", () => {
+    const updateData = { inc_votes: 1 };
+
+    return request(app)
+      .patch("/api/articles/9999")
+      .send(updateData)
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Article not found");
       });
   });
 });
