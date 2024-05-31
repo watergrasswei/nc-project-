@@ -161,3 +161,85 @@ describe("GET /api/articles/:article_id/comments", () => {
       });
   });
 });
+
+describe("POST /api/articles/:article_id/comments", () => {
+  test("201: Responds with the posted comment", () => {
+    const newComment = {
+      username: "icellusedkars",
+      body: "This is a test comment.",
+    };
+
+    return request(app)
+      .post("/api/articles/1/comments")
+      .send(newComment)
+      .expect(201)
+      .then(({ body }) => {
+        console.log(body.comment);
+        expect(body.comment).toEqual(
+          expect.objectContaining({
+            comment_id: expect.any(Number),
+            body: "This is a test comment.",
+            article_id: 1,
+            author: "icellusedkars",
+            votes: 0,
+            created_at: expect.any(String),
+          })
+        );
+      });
+  });
+
+  test("400: Invalid article ID format", () => {
+    const newComment = {
+      username: "validUser",
+      body: "This is a test comment.",
+    };
+
+    return request(app)
+      .post("/api/articles/invalid_id/comments")
+      .send(newComment)
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Invalid article ID format");
+      });
+  });
+
+  test("400: Missing required fields", () => {
+    return request(app)
+      .post("/api/articles/1/comments")
+      .send({})
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Missing required fields");
+      });
+  });
+
+  test("404: Article not found", () => {
+    const newComment = {
+      username: "validUser",
+      body: "This is a test comment.",
+    };
+
+    return request(app)
+      .post("/api/articles/9999/comments")
+      .send(newComment)
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Article not found");
+      });
+  });
+
+  test("404: User not found", () => {
+    const newComment = {
+      username: "invalidUser",
+      body: "This is a test comment.",
+    };
+
+    return request(app)
+      .post("/api/articles/1/comments")
+      .send(newComment)
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.msg).toBe("User not found");
+      });
+  });
+});

@@ -58,9 +58,50 @@ const selectComments = (article_id) => {
     });
 };
 
+const insertComment = (article_id, username, body) => {
+  const numberArticleId = +article_id;
+
+  if (isNaN(numberArticleId)) {
+    return Promise.reject({ status: 400, msg: "Invalid article ID format" });
+  }
+
+  if (!username || !body) {
+    return Promise.reject({ status: 400, msg: "Missing required fields" });
+  }
+
+  const articleCheckQuery = "SELECT * FROM articles WHERE article_id = $1";
+
+  return db
+    .query(articleCheckQuery, [article_id])
+    .then((articleCheckResult) => {
+      if (articleCheckResult.rows.length === 0) {
+        return Promise.reject({ status: 404, msg: "Article not found" });
+      }
+      const userCheckQuery = "SELECT * FROM users WHERE username = $1";
+      return db.query(userCheckQuery, [username]);
+    })
+    .then((userCheckResult) => {
+      if (userCheckResult.rows.length === 0) {
+        return Promise.reject({ status: 404, msg: "User not found" });
+      }
+      const insertCommentQuery = `
+         INSERT INTO comments (article_id, author, body, votes, created_at)
+         VALUES ($1, $2, $3, 0, NOW())
+         RETURNING *;
+       `;
+
+      return db.query(insertCommentQuery, [article_id, username, body]);
+    })
+
+    .then((insertCommentResult) => {
+      return insertCommentResult.rows[0];
+    });
+};
+
 module.exports = {
   selectTopics,
   selectArticle,
   selectArticles,
   selectComments,
+  insertComment,
 };
