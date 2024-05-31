@@ -4,7 +4,8 @@ const {
   selectArticles,
   selectComments,
   insertComment,
-  updateArticleVotes
+  updateArticleVotes,
+  deleteCommentById
 } = require("../models/api.models");
 const endpoints = require("../endpoints.json");
 
@@ -79,6 +80,17 @@ const patchArticleVotes = (req, res, next) => {
     .catch(next);
 };
 
+const deleteComment = (req, res, next) => {
+  const { comment_id } = req.params;
+
+  deleteCommentById(comment_id)
+    .then(() => {
+      res.status(204).send();
+    })
+    .catch(next);
+};
+
+
 module.exports = { getTopics,
    getApi, getArticle, getArticles, 
-   getComments, postComment,patchArticleVotes  };
+   getComments, postComment,patchArticleVotes,deleteComment  };
