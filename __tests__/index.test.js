@@ -4,7 +4,7 @@ const db = require("../db/connection.js");
 const seed = require("../db/seeds/seed.js");
 const data = require("../db/data/test-data/index");
 const endpointsJson = require("../endpoints.json");
-const articlesData = require('../db/data/test-data/articles.js')
+const articlesData = require("../db/data/test-data/articles.js");
 
 beforeEach(() => seed(data));
 afterAll(() => db.end());
@@ -79,37 +79,85 @@ describe("GET /api/articles/:article_id", () => {
   });
 });
 
-
-describe.only("GET /api/articles", () => {
+describe("GET /api/articles", () => {
   test("responds with all articles.", () => {
     return request(app)
-    .get("/api/articles")
-    .expect(200)
-    .then(({ body }) => {
-      const { articles } = body;
-      console.log(articles)
-      expect(Array.isArray(articles)).toBe(true)
-     expect(articles).toHaveLength(articlesData.length);
-      expect(articles).toBeSortedBy("created_at", { descending: true });
-      articles.forEach((article) => {
-        expect(article).toMatchObject({
-          author: expect.any(String),
-          title: expect.any(String),
-          article_id: expect.any(Number),
-          topic: expect.any(String),
-          created_at: expect.any(String),
-          votes: expect.any(Number),
-          article_img_url: expect.any(String),
-          comment_count: expect.any(Number),
+      .get("/api/articles")
+      .expect(200)
+      .then(({ body }) => {
+        const { articles } = body;
+        expect(Array.isArray(articles)).toBe(true);
+        expect(articles).toHaveLength(articlesData.length);
+        expect(articles).toBeSortedBy("created_at", { descending: true });
+        articles.forEach((article) => {
+          expect(article).toMatchObject({
+            author: expect.any(String),
+            title: expect.any(String),
+            article_id: expect.any(Number),
+            topic: expect.any(String),
+            created_at: expect.any(String),
+            votes: expect.any(Number),
+            article_img_url: expect.any(String),
+            comment_count: expect.any(Number),
+          });
         });
       });
-    });
   });
 
   test("should return 404 for an invalid endpoint", () => {
+    return request(app).get("/api/invalid_endpoint").expect(404);
+  });
+});
+
+describe("GET /api/articles/:article_id/comments", () => {
+  test("get all comments for an article", () => {
     return request(app)
-      .get("/api/invalid_endpoint")
-      .expect(404);
+      .get("/api/articles/3/comments")
+      .expect(200)
+      .then(({ body }) => {
+        const { comments } = body;
+        expect(Array.isArray(comments)).toBe(true);
+        expect(comments).toHaveLength(2);
+        expect(comments).toBeSortedBy("created_at", { descending: true });
+        comments.forEach((comment) => {
+          expect(comment).toMatchObject({
+            comment_id: expect.any(Number),
+            votes: expect.any(Number),
+            created_at: expect.any(String),
+            author: expect.any(String),
+            body: expect.any(String),
+            article_id: expect.any(Number),
+          });
+        });
+      });
+  });
+  test("get all comments for an article", () => {
+    return request(app)
+      .get("/api/articles/7/comments")
+      .expect(200)
+      .then(({ body }) => {
+        const { comments } = body;
+        console.log(comments);
+        expect(Array.isArray(comments)).toBe(true);
+        expect(comments).toHaveLength(0);
+      });
   });
 
+  test("400: Invalid article ID format", () => {
+    return request(app)
+      .get("/api/articles/not-a-number/comments")
+      .expect(400)
+      .then((response) => {
+        expect(response.body.msg).toBe("Invalid article ID format");
+      });
+  });
+
+  test("404: Article not found for a valid but non-existing ID", () => {
+    return request(app)
+      .get("/api/articles/9999/comments")
+      .expect(404)
+      .then((response) => {
+        expect(response.body.msg).toBe("Article not found");
+      });
+  });
 });
