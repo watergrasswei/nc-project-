@@ -1,4 +1,10 @@
-const { selectTopics, selectArticle, selectArticles, selectComments } = require("../models/api.models");
+const {
+  selectTopics,
+  selectArticle,
+  selectArticles,
+  selectComments,
+  insertComment
+} = require("../models/api.models");
 const endpoints = require("../endpoints.json");
 
 const getTopics = (req, res, next) => {
@@ -31,17 +37,36 @@ const getArticle = (req, res, next) => {
     });
 };
 
-const getArticles = (req, res, next) =>{ 
-  selectArticles().then( (articles)=>{return res.status(200).send({articles})})
-.catch((err) => {
-  next(err);})
-}
+const getArticles = (req, res, next) => {
+  selectArticles()
+    .then((articles) => {
+      return res.status(200).send({ articles });
+    })
+    .catch((err) => {
+      next(err);
+    });
+};
 
-const getComments = (req,res,next) =>{
+const getComments = (req, res, next) => {
   const { article_id } = req.params;
-  selectComments(article_id).then((comments)=>{return res.status(200).send({comments})})
-  .catch(next)
-}
+  selectComments(article_id)
+    .then((comments) => {
+      return res.status(200).send({ comments });
+    })
+    .catch(next);
+};
 
+const postComment = (req, res, next) => {
+  const { article_id } = req.params;
+  const { username, body } = req.body;
 
-module.exports = { getTopics, getApi, getArticle, getArticles, getComments};
+  insertComment(article_id, username, body)
+    .then((comment) => {
+      res.status(201).send({ comment });
+    })
+    .catch(next);
+};
+
+module.exports = { getTopics,
+   getApi, getArticle, getArticles, 
+   getComments, postComment};
