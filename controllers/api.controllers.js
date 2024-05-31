@@ -3,7 +3,8 @@ const {
   selectArticle,
   selectArticles,
   selectComments,
-  insertComment
+  insertComment,
+  updateArticleVotes
 } = require("../models/api.models");
 const endpoints = require("../endpoints.json");
 
@@ -67,6 +68,17 @@ const postComment = (req, res, next) => {
     .catch(next);
 };
 
+const patchArticleVotes = (req, res, next) => {
+  const { article_id } = req.params;
+  const { inc_votes } = req.body;
+
+  updateArticleVotes(article_id, inc_votes)
+    .then(article => {
+      res.status(200).send({ article });
+    })
+    .catch(next);
+};
+
 module.exports = { getTopics,
    getApi, getArticle, getArticles, 
-   getComments, postComment};
+   getComments, postComment,patchArticleVotes  };
